@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: memoloop-pg
+    environment:
+      POSTGRES_USER: memoloop
+      POSTGRES_PASSWORD: memoloop_dev_pwd
+      POSTGRES_DB: memoloop
+    ports:
+      - "5433:5432"          # 本机 5433，避开可能已存在的 5432 实例
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U memoloop -d memoloop"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build: ./backend
+    container_name: memoloop-api
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app          # 开发期热更新
+      - ./db:/db:ro             # 供启动时兜底执行 schema.sql
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    image: node:22-alpine
+    container_name: memoloop-web
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "5173:5173"
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+
+volumes:
+  pgdata:
