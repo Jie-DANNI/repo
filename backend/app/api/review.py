@@ -100,12 +100,17 @@ async def review_quiz(
     error_rows = (
         await db.execute(
             text(
-                "SELECT jsonb_array_elements_text(tag) AS tag FROM ( "
-                "  SELECT error_tags FROM quiz_responses qr "
+                # 注意：只摊平一层。jsonb_array_elements_text 已经把数组展开成字符串，
+                # 绝不能再对它套一次 jsonb_array_elements（会报 cannot extract elements from a scalar）
+                "SELECT tag FROM ( "
+                "  SELECT jsonb_array_elements_text(qr.error_tags) AS tag, qr.answered_at "
+                "  FROM quiz_responses qr "
                 "  JOIN quiz_items qi ON qi.id = qr.quiz_item_id "
                 "  WHERE qi.knowledge_point_id = :kp AND qr.user_id = :uid "
-                "  ORDER BY qr.answered_at DESC LIMIT 10 "
-                ") t, jsonb_array_elements(t.error_tags) AS tag"
+                "    AND jsonb_typeof(qr.error_tags) = 'array' "
+                "  ORDER BY qr.answered_at DESC "
+                "  LIMIT 20 "
+                ") t WHERE t.tag IS NOT NULL LIMIT 10"
             ),
             {"kp": kp_id, "uid": user.id},
         )

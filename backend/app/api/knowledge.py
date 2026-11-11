@@ -102,7 +102,8 @@ async def stats_overview(
         await db.execute(
             text(
                 "SELECT tag, count(*) AS n FROM ("
-                "  SELECT jsonb_array_elements_text(error_tags) AS tag FROM quiz_responses WHERE user_id=:uid"
+                "  SELECT jsonb_array_elements_text(error_tags) AS tag FROM quiz_responses "
+                "  WHERE user_id=:uid AND jsonb_typeof(error_tags) = 'array'"
                 ") t GROUP BY tag ORDER BY n DESC LIMIT 5"
             ),
             {"uid": user.id},
