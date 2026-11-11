@@ -1,98 +1,84 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
-import { useAuth } from '../store/auth'
+import { Link } from 'react-router-dom'
+import api from '../lib/api'
+import type { StatsOverview } from '../lib/types'
 
-/** 登录后的工作台占位页：P2 起将替换为资料上传 + 今日复习入口 */
+/** 工作台：今日复习入口 + 关键指标速览 */
 export default function Home() {
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
-  const [health, setHealth] = useState<'checking' | 'ok' | 'fail'>('checking')
+  const [todayTotal, setTodayTotal] = useState<number | null>(null)
+  const [stats, setStats] = useState<StatsOverview | null>(null)
 
   useEffect(() => {
-    axios
-      .get('/api/health')
-      .then((r) => setHealth(r.data.status === 'ok' ? 'ok' : 'fail'))
-      .catch(() => setHealth('fail'))
+    api
+      .get('/review/today', { params: { limit: 1 } })
+      .then((r) => setTodayTotal(r.data.total))
+      .catch(() => setTodayTotal(null))
+    api
+      .get('/stats/overview')
+      .then((r) => setStats(r.data))
+      .catch(() => setStats(null))
   }, [])
 
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-slate-200 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">🧠</span>
-            <span className="font-semibold text-slate-900">忆循环 MemoLoop</span>
-          </div>
-          <div className="flex items-center gap-3 text-sm">
-            <span className="text-slate-500">
-              {user?.nickname}
-              {user?.role === 'demo' && (
-                <span className="ml-2 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] text-amber-600">
-                  演示账号
-                </span>
-              )}
-            </span>
-            <button
-              onClick={() => {
-                logout()
-                navigate('/login', { replace: true })
-              }}
-              className="rounded-lg border border-slate-200 px-3 py-1.5 text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
-            >
-              退出
-            </button>
-          </div>
-        </div>
-      </header>
+    <div>
+      <h1 className="text-2xl font-semibold">工作台</h1>
+      <p className="mt-1 text-sm text-[var(--ml-text-muted)]">
+        上传课件 → AI 建卡 → 按遗忘曲线复习，答错会被定向追问。
+      </p>
 
-      <main className="mx-auto max-w-5xl px-6 py-10">
-        <h1 className="text-2xl font-semibold text-slate-900">
-          你好，{user?.nickname} 👋
-        </h1>
-        <p className="mt-2 text-slate-500">
-          P1 认证已完成。接下来这里会变成你的记忆工作台。
-        </p>
+      {/* 主行动区 */}
+      <div className="ml-card mt-6 flex flex-col items-center gap-4 px-6 py-10">
+        {todayTotal === null ? (
+          <div className="text-sm text-[var(--ml-text-muted)]">加载中…</div>
+        ) : todayTotal > 0 ? (
+          <>
+            <div className="text-4xl font-semibold">{todayTotal}</div>
+            <div className="text-sm text-[var(--ml-text-muted)]">张卡片等待复习</div>
+            <Link to="/review" className="ml-btn ml-btn-primary px-8 py-3 text-base">
+              开始今日复习 →
+            </Link>
+          </>
+        ) : (
+          <>
+            <div className="text-lg">🎉 今日复习已清空</div>
+            <div className="text-sm text-[var(--ml-text-muted)]">上传新课件，开始积累知识卡片</div>
+            <Link to="/documents" className="ml-btn ml-btn-primary px-8 py-3 text-base">
+              去知识库上传 →
+            </Link>
+          </>
+        )}
+      </div>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-3">
-          {[
-            { icon: '📄', title: '上传资料', desc: 'PDF 自动解析成知识点卡片', tag: 'P2' },
-            { icon: '🔁', title: '今日复习', desc: '按遗忘曲线调度，题型逐轮升级', tag: 'P5-P6' },
-            { icon: '📊', title: '学习统计', desc: '热力图 + 错因 Top5 + 保有率曲线', tag: 'P9' },
-          ].map((c) => (
-            <div
-              key={c.title}
-              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-card"
-            >
-              <div className="text-2xl">{c.icon}</div>
-              <h3 className="mt-3 font-medium text-slate-900">{c.title}</h3>
-              <p className="mt-1 text-sm text-slate-500">{c.desc}</p>
-              <span className="mt-3 inline-block rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500">
-                待实现 {c.tag}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-8 flex items-center gap-2 text-xs text-slate-400">
-          <span>服务状态</span>
-          <span
-            className={
-              health === 'ok'
-                ? 'text-emerald-600'
-                : health === 'fail'
-                  ? 'text-red-500'
-                  : 'text-slate-400'
-            }
-          >
-            {health === 'checking' ? '检测中…' : health === 'ok' ? '正常' : '异常'}
-          </span>
-          <span className="mx-2 text-slate-300">|</span>
-          <span>用户 ID {user?.id}</span>
-          <span className="mx-2 text-slate-300">|</span>
-          <span>{user?.email}</span>
-        </div>
-      </main>
+      {/* 指标速览 */}
+      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+        {[
+          {
+            icon: '📚',
+            label: '知识点总数',
+            value: stats ? String(stats.kp_total) : '…',
+            link: '/documents',
+          },
+          {
+            icon: '🧠',
+            label: '平均记忆保有率',
+            value: stats ? `${Math.round(stats.retention.avg_retrievability * 100)}%` : '…',
+            link: '/stats',
+          },
+          {
+            icon: '🔍',
+            label: '头号错因',
+            value:
+              stats && stats.error_top.length > 0 ? stats.error_top[0].tag : '暂无',
+            link: '/stats',
+          },
+        ].map((c) => (
+          <Link key={c.label} to={c.link} className="ml-card block p-5 transition hover:-translate-y-0.5">
+            <div className="text-2xl">{c.icon}</div>
+            <div className="mt-3 text-2xl font-semibold">{c.value}</div>
+            <div className="mt-1 text-xs text-[var(--ml-text-muted)]">{c.label}</div>
+          </Link>
+        ))}
+      </div>
     </div>
   )
 }

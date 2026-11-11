@@ -1,7 +1,11 @@
 import { useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import Layout from './components/Layout'
+import Documents from './pages/Documents'
 import Home from './pages/Home'
 import Login from './pages/Login'
+import Review from './pages/Review'
+import Stats from './pages/Stats'
 import { useAuth } from './store/auth'
 
 /** 路由守卫：未登录跳登录页，并记住来源路径 */
@@ -27,10 +31,15 @@ export default function App() {
         path="/"
         element={
           <RequireAuth>
-            <Home />
+            <Layout />
           </RequireAuth>
         }
-      />
+      >
+        <Route index element={<Home />} />
+        <Route path="documents" element={<Documents />} />
+        <Route path="review" element={<Review />} />
+        <Route path="stats" element={<Stats />} />
+      </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

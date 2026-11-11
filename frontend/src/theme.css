@@ -1,0 +1,155 @@
+/* =====================================================================
+   忆循环 MemoLoop · 设计令牌（唯一的风格控制文件）
+   --------------------------------------------------------------------
+   你想自己把控前端风格：只改这个文件即可全局生效。
+   - 改颜色：动 --ml-* 变量
+   - 改圆角/阴影/字体：动对应变量
+   - 组件类（.ml-card / .ml-btn / .ml-badge ...）自动引用这些变量
+   页面代码只做布局与逻辑，不硬编码任何视觉值。
+   ===================================================================== */
+
+:root {
+  /* ---- 色板（改这里换肤）---- */
+  --ml-primary: #2563eb;        /* 主色：按钮、链接、强调 */
+  --ml-primary-strong: #1d4ed8; /* 主色按压态 */
+  --ml-primary-soft: #eff6ff;   /* 主色浅底：选中、高亮背景 */
+  --ml-bg: #f8fafc;             /* 页面背景 */
+  --ml-surface: #ffffff;        /* 卡片/面板背景 */
+  --ml-border: #e2e8f0;         /* 边框 */
+  --ml-text: #0f172a;           /* 主文字 */
+  --ml-text-muted: #64748b;     /* 次要文字 */
+  --ml-success: #059669;        /* 正确/通过 */
+  --ml-success-soft: #ecfdf5;
+  --ml-warn: #d97706;           /* 警告/进行中 */
+  --ml-warn-soft: #fffbeb;
+  --ml-danger: #dc2626;         /* 错误/失败 */
+  --ml-danger-soft: #fef2f2;
+  --ml-mute-soft: #f1f5f9;      /* 中性浅底 */
+
+  /* ---- 形状与质感 ---- */
+  --ml-radius: 14px;            /* 卡片圆角 */
+  --ml-radius-sm: 9px;          /* 按钮/输入框圆角 */
+  --ml-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(15, 23, 42, 0.16);
+  --ml-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+}
+
+/* ---- 全局 ---- */
+html { font-family: var(--ml-font); }
+body { background: var(--ml-bg); color: var(--ml-text); margin: 0; }
+
+/* ---- 卡片 ---- */
+.ml-card {
+  background: var(--ml-surface);
+  border: 1px solid var(--ml-border);
+  border-radius: var(--ml-radius);
+  box-shadow: var(--ml-shadow);
+}
+
+/* ---- 按钮 ---- */
+.ml-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 8px 16px; font-size: 14px; line-height: 1;
+  border-radius: var(--ml-radius-sm);
+  border: 1px solid var(--ml-border);
+  background: var(--ml-surface); color: var(--ml-text);
+  cursor: pointer; transition: all 0.15s ease; white-space: nowrap;
+}
+.ml-btn:hover { border-color: var(--ml-text-muted); }
+.ml-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.ml-btn-primary {
+  background: var(--ml-primary); border-color: var(--ml-primary); color: #fff;
+}
+.ml-btn-primary:hover { background: var(--ml-primary-strong); border-color: var(--ml-primary-strong); }
+
+.ml-btn-ghost { background: transparent; border-color: transparent; color: var(--ml-text-muted); }
+.ml-btn-ghost:hover { background: var(--ml-mute-soft); color: var(--ml-text); }
+
+/* ---- 徽章 / 标签 ---- */
+.ml-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 10px; font-size: 12px; line-height: 1.6;
+  border-radius: 999px; background: var(--ml-mute-soft); color: var(--ml-text-muted);
+}
+.ml-badge.is-ok { background: var(--ml-success-soft); color: var(--ml-success); }
+.ml-badge.is-warn { background: var(--ml-warn-soft); color: var(--ml-warn); }
+.ml-badge.is-danger { background: var(--ml-danger-soft); color: var(--ml-danger); }
+.ml-badge.is-primary { background: var(--ml-primary-soft); color: var(--ml-primary); }
+
+.ml-chip {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; font-size: 12px;
+  border-radius: 999px; border: 1px dashed var(--ml-border);
+  color: var(--ml-text-muted); background: var(--ml-surface);
+}
+.ml-chip.is-danger { color: var(--ml-danger); border-color: var(--ml-danger); background: var(--ml-danger-soft); }
+
+/* ---- 输入 ---- */
+.ml-input, .ml-textarea {
+  width: 100%; padding: 9px 12px; font-size: 14px; font-family: inherit;
+  border-radius: var(--ml-radius-sm);
+  border: 1px solid var(--ml-border); background: var(--ml-surface); color: var(--ml-text);
+  outline: none; transition: border-color 0.15s ease;
+}
+.ml-input:focus, .ml-textarea:focus { border-color: var(--ml-primary); }
+.ml-textarea { resize: vertical; min-height: 84px; line-height: 1.6; }
+
+/* ---- 导航 ---- */
+.ml-nav-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; font-size: 14px;
+  border-radius: var(--ml-radius-sm);
+  color: var(--ml-text-muted); text-decoration: none;
+  transition: all 0.15s ease;
+}
+.ml-nav-link:hover { background: var(--ml-mute-soft); color: var(--ml-text); }
+.ml-nav-link.is-active { background: var(--ml-primary-soft); color: var(--ml-primary); font-weight: 600; }
+
+/* ---- 复习选项按钮（选择题 A-D / 判断题 对错）---- */
+.ml-option {
+  display: flex; align-items: flex-start; gap: 10px; width: 100%;
+  padding: 12px 14px; font-size: 15px; text-align: left; line-height: 1.6;
+  border-radius: var(--ml-radius-sm);
+  border: 1px solid var(--ml-border); background: var(--ml-surface);
+  cursor: pointer; transition: all 0.15s ease; font-family: inherit;
+}
+.ml-option:hover:not(:disabled) { border-color: var(--ml-primary); }
+.ml-option.is-picked { border-color: var(--ml-primary); background: var(--ml-primary-soft); }
+.ml-option:disabled { opacity: 0.65; cursor: not-allowed; }
+
+/* ---- 聊天气泡（追问抽屉）---- */
+.ml-bubble {
+  max-width: 86%; padding: 10px 14px; font-size: 14px; line-height: 1.7;
+  border-radius: var(--ml-radius); white-space: pre-wrap; word-break: break-word;
+}
+.ml-bubble-user { background: var(--ml-primary-soft); color: var(--ml-text); align-self: flex-end; }
+.ml-bubble-ai { background: var(--ml-mute-soft); color: var(--ml-text); align-self: flex-start; }
+
+/* ---- 流式光标（打字机）---- */
+.stream-cursor::after {
+  content: '▍';
+  color: var(--ml-primary);
+  animation: ml-blink 0.9s steps(2) infinite;
+}
+@keyframes ml-blink { 50% { opacity: 0; } }
+
+/* ---- 进度条（评分/统计用）---- */
+.ml-bar-track { height: 8px; border-radius: 999px; background: var(--ml-mute-soft); overflow: hidden; }
+.ml-bar-fill { height: 100%; border-radius: 999px; background: var(--ml-primary); transition: width 0.4s ease; }
+.ml-bar-fill.is-success { background: var(--ml-success); }
+.ml-bar-fill.is-danger { background: var(--ml-danger); }
+.ml-bar-fill.is-warn { background: var(--ml-warn); }
+
+/* ---- 抽屉（苏格拉底追问）---- */
+.ml-drawer-mask {
+  position: fixed; inset: 0; z-index: 40;
+  background: rgba(15, 23, 42, 0.35);
+}
+.ml-drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 50;
+  width: min(440px, 92vw);
+  background: var(--ml-surface); border-left: 1px solid var(--ml-border);
+  box-shadow: var(--ml-shadow);
+  display: flex; flex-direction: column;
+}
