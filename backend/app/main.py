@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
+from app.api import auth as auth_api
 from app.core.config import settings
 from app.db import engine, init_schema_if_needed
 
@@ -40,6 +41,9 @@ app.add_middleware(
 @app.get("/")
 async def root():
     return {"app": "memoloop", "version": app.version}
+
+
+app.include_router(auth_api.router)
 
 
 @app.get("/health")
