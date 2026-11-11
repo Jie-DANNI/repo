@@ -7,7 +7,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="ignore"
+        # 依次尝试：backend/.env（本地从 backend 目录启动）→ ../.env（项目根）
+        env_file=(".env", "../.env"),
+        env_file_encoding="utf-8",
+        extra="ignore",
     )
 
     # 数据库
@@ -22,6 +25,7 @@ class Settings(BaseSettings):
     embedding_base_url: str = ""
     embedding_api_key: str = ""
     embedding_model: str = "BAAI/bge-m3"
+    embedding_dim: int = 1024
 
     # 认证
     jwt_secret: str = "dev-only-secret"

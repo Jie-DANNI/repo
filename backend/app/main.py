@@ -10,6 +10,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from app.api import auth as auth_api
+from app.api import conversations as conversations_api
+from app.api import documents as documents_api
+from app.api import knowledge as knowledge_api
+from app.api import quiz as quiz_api
+from app.api import review as review_api
 from app.core.config import settings
 from app.db import engine, init_schema_if_needed
 
@@ -44,6 +49,11 @@ async def root():
 
 
 app.include_router(auth_api.router)
+app.include_router(documents_api.router)
+app.include_router(review_api.router)
+app.include_router(quiz_api.router)
+app.include_router(conversations_api.router)
+app.include_router(knowledge_api.router)
 
 
 @app.get("/health")
@@ -57,4 +67,10 @@ async def health():
             db_version = (await conn.execute(text("SELECT version()"))).scalar() or ""
     except Exception:
         db_ok = False
-    return {"status": "ok" if db_ok else "degraded", "db": db_ok, "db_version": db_version[:60]}
+    return {
+        "status": "ok" if db_ok else "degraded",
+        "db": db_ok,
+        "db_version": db_version[:60],
+        "llm_configured": bool(settings.llm_base_url and settings.llm_api_key),
+        "llm_model": settings.llm_model,
+    }

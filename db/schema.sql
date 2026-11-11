@@ -57,7 +57,7 @@ CREATE TABLE chunks (
     heading_path    TEXT,                                   -- 所属标题层级路径, 如 "3.2>偏差与方差"
     page_no         INT,
     token_count     INT     NOT NULL DEFAULT 0,
-    embedding       vector(1536),                            -- 与 Embedding 模型维度一致
+    embedding       vector(1024),                            -- 与 Embedding 模型维度一致
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 -- 向量检索索引（生产用 hnsw，数据量小可用 ivfflat）
@@ -78,7 +78,7 @@ CREATE TABLE knowledge_points (
     keywords        JSONB       NOT NULL DEFAULT '[]',
     difficulty      SMALLINT    NOT NULL DEFAULT 3,          -- 1-5, 出题难度基准
     importance      SMALLINT    NOT NULL DEFAULT 3,          -- 1-5, 考纲权重
-    embedding       vector(1536),                            -- 知识点级向量（题目生成时检索相近考点）
+    embedding       vector(1024),                            -- 知识点级向量（题目生成时检索相近考点）
     status          VARCHAR(16) NOT NULL DEFAULT 'active',  -- active / suspended / archived
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
