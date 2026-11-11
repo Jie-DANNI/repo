@@ -1,6 +1,8 @@
-import { useEffect } from 'react'
+import { useEffect, useLayoutEffect } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Layout from './components/Layout'
+import Landing from './pages/Landing'
+import Demo from './pages/Demo'
 import Documents from './pages/Documents'
 import Home from './pages/Home'
 import Login from './pages/Login'
@@ -18,6 +20,8 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   const restore = useAuth((s) => s.restore)
+  const { pathname } = useLocation()
+  useLayoutEffect(() => { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }) }, [pathname])
 
   // 应用启动时用本地 token 校验登录态（刷新不掉线）
   useEffect(() => {
@@ -26,16 +30,17 @@ export default function App() {
 
   return (
     <Routes>
+      <Route path="/" element={<Landing />} />
+      <Route path="/demo" element={<Demo />} />
       <Route path="/login" element={<Login />} />
       <Route
-        path="/"
         element={
           <RequireAuth>
             <Layout />
           </RequireAuth>
         }
       >
-        <Route index element={<Home />} />
+        <Route path="workspace" element={<Home />} />
         <Route path="documents" element={<Documents />} />
         <Route path="review" element={<Review />} />
         <Route path="stats" element={<Stats />} />

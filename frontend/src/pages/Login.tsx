@@ -1,108 +1,15 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { errorMessage } from '../lib/api'
 import { useAuth } from '../store/auth'
-
-export default function Login() {
-  const navigate = useNavigate()
-  const { login, register } = useAuth()
-  const [mode, setMode] = useState<'login' | 'register'>('login')
-  const [email, setEmail] = useState('')
-  const [nickname, setNickname] = useState('')
-  const [password, setPassword] = useState('')
-  const [err, setErr] = useState('')
-  const [busy, setBusy] = useState(false)
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault()
-    setErr('')
-    setBusy(true)
-    try {
-      if (mode === 'login') await login(email.trim(), password)
-      else await register(email.trim(), nickname.trim(), password)
-      navigate('/', { replace: true })
-    } catch (e) {
-      setErr(errorMessage(e))
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  return (
-    <div className="min-h-screen flex items-center justify-center px-6 bg-gradient-to-b from-slate-50 to-brand-50/40">
-      <div className="w-full max-w-sm bg-white rounded-2xl shadow-card p-8">
-        <div className="text-center">
-          <div className="text-4xl">🧠</div>
-          <h2 className="mt-3 text-xl font-semibold text-slate-900">
-            {mode === 'login' ? '登录忆循环' : '创建账号'}
-          </h2>
-          <p className="mt-1 text-sm text-slate-500">
-            {mode === 'login' ? '复习不是重复看，而是递进地记住' : '开始你的记忆管理'}
-          </p>
-        </div>
-
-        <form onSubmit={submit} className="mt-6 space-y-3">
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
-            placeholder="邮箱"
-            autoComplete="email"
-          />
-          {mode === 'register' && (
-            <input
-              required
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
-              placeholder="昵称"
-              maxLength={32}
-            />
-          )}
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
-            placeholder={mode === 'register' ? '密码（至少8位，含字母和数字）' : '密码'}
-            autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-          />
-
-          {err && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{err}</p>
-          )}
-
-          <button
-            type="submit"
-            disabled={busy}
-            className="w-full rounded-xl bg-brand-600 py-2.5 text-sm font-medium text-white transition hover:bg-brand-700 disabled:opacity-60"
-          >
-            {busy ? '处理中…' : mode === 'login' ? '登录' : '注册并登录'}
-          </button>
-        </form>
-
-        <div className="mt-5 flex items-center justify-between text-xs text-slate-400">
-          <button
-            onClick={() => {
-              setMode(mode === 'login' ? 'register' : 'login')
-              setErr('')
-            }}
-            className="hover:text-brand-600"
-          >
-            {mode === 'login' ? '没有账号？去注册' : '已有账号？去登录'}
-          </button>
-          <Link to="/" className="hover:text-brand-600">
-            返回首页
-          </Link>
-        </div>
-
-        <p className="mt-6 rounded-lg bg-slate-50 px-3 py-2 text-[11px] leading-relaxed text-slate-400">
-          评审演示账号：demo@memoloop.cn / Demo@2026
-        </p>
-      </div>
-    </div>
-  )
+import Brand from '../components/Brand'
+import Icon from '../components/Icon'
+export default function Login(){
+ const navigate=useNavigate(); const location=useLocation(); const [params]=useSearchParams()
+ const {login,register}=useAuth()
+ const [mode,setMode]=useState<'login'|'register'>(params.get('mode')==='register'?'register':'login')
+ const [email,setEmail]=useState(''); const [nickname,setNickname]=useState(''); const [password,setPassword]=useState(''); const [err,setErr]=useState(''); const [busy,setBusy]=useState(false)
+ const preview=import.meta.env.VITE_SHOWCASE_ONLY==='true'
+ async function submit(e:React.FormEvent){e.preventDefault();setErr('');if(preview){setErr('这是界面预览，尚未连接后端。请先体验内置示例，或在原项目中启动后端后登录。');return}setBusy(true);try{if(mode==='login')await login(email.trim(),password);else await register(email.trim(),nickname.trim(),password);const target=location.state?.from||(params.get('next')==='documents'?'/documents':'/workspace');navigate(['/workspace','/documents','/review','/stats'].includes(target)?target:'/workspace',{replace:true})}catch(e){setErr(errorMessage(e))}finally{setBusy(false)}}
+ return <div className="auth-page"><aside className="auth-story"><Brand/><div className="auth-story-body"><span className="eyebrow">LEARN. REMEMBER. GROW.</span><h1>让每一次学习，<br/><span>都成为你的知识。</span></h1><p>从课件到卡片，从回忆到理解。<br/>在 MemoLoop，开启属于你的学习循环。</p><div className="auth-note-card"><span><Icon name="cards" size={16}/> 给今天的你，一张学习卡片</span><h3>什么才是真正的“学会”？</h3><p>不只是在笔记里见过，<br/>而是合上书之后，依然能用自己的话讲清楚。</p><footer><Icon name="check" size={14}/> 每一次主动回忆，都在加深理解。</footer></div></div><span className="auth-caption">MemoLoop 忆循环 · 学会，也记得。</span></aside><div className="auth-form-side"><Link to="/" className="auth-back">返回首页 ↗</Link><div className="auth-form"><Brand/><span className="eyebrow">你的学习，从这里继续</span><h2>{mode==='login'?'欢迎回来。':'创建你的学习空间。'}</h2><p>{mode==='login'?'登录 MemoLoop，继续积累属于你的知识。':'从第一份资料开始，让学习形成循环。'}</p>{preview&&<div className="hosted-notice">当前为界面预览，登录和上传需连接原项目后端。下方「体验示例」可直接使用。</div>}<form onSubmit={submit}><label htmlFor="email">邮箱地址<input id="email" className="ml-input" type="email" required value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" autoComplete="email"/></label>{mode==='register'&&<label htmlFor="nickname">怎么称呼你<input id="nickname" className="ml-input" required value={nickname} onChange={e=>setNickname(e.target.value)} placeholder="你的昵称" maxLength={32} autoComplete="nickname"/></label>}<label htmlFor="password">密码<input id="password" className="ml-input" type="password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder={mode==='register'?'至少 8 位，包含字母和数字':'输入你的密码'} minLength={mode==='register'?8:undefined} autoComplete={mode==='login'?'current-password':'new-password'}/></label>{err&&<p className="app-error" role="alert">{err}</p>}<button className="ml-btn ml-btn-primary" disabled={busy} type="submit">{busy?'处理中…':mode==='login'?'登录学习空间':'创建账号并开始学习'} <Icon name="arrow" size={17}/></button></form><div className="auth-switch">{mode==='login'?'还没有账号？':'已经有账号？'}<button onClick={()=>{setMode(mode==='login'?'register':'login');setErr('')}}>{mode==='login'?'立即注册':'去登录'}</button></div><div className="auth-divider">也可以先了解一下</div><Link to="/demo" className="auth-demo-link"><Icon name="play" size={14}/> 体验示例，无需登录</Link><div className="auth-demo-account">本地部署演示账号：demo@memoloop.cn / Demo@2026<br/>需先运行项目原有的演示数据初始化脚本。</div></div></div></div>
 }

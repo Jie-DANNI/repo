@@ -13,6 +13,7 @@ export default function Review() {
   const [idx, setIdx] = useState(0)
   const [phase, setPhase] = useState<Phase>('loading')
   const [error, setError] = useState('')
+  const [queueLoading, setQueueLoading] = useState(true)
 
   // 当前题目
   const [question, setQuestion] = useState('')
@@ -35,7 +36,7 @@ export default function Review() {
       .get('/review/today', { params: { limit: 20 } })
       .then((r) => setQueue(r.data.items))
       .catch((e) => setError(errorMessage(e)))
-      .finally(() => setPhase((p) => (p === 'loading' && true ? 'loading' : p)))
+      .finally(() => setQueueLoading(false))
   }, [])
 
   // 2) 为当前卡流出题（SSE 打字机）
@@ -98,8 +99,12 @@ export default function Review() {
 
   /* ---------- 渲染 ---------- */
 
-  if (phase === 'loading' && queue.length === 0) {
+  if (queueLoading) {
     return <div className="ml-card p-10 text-center text-sm text-[var(--ml-text-muted)]">加载今日队列…</div>
+  }
+
+  if (error && queue.length === 0) {
+    return <div className="app-error" role="alert">{error}<button className="ml-btn ml-btn-ghost ml-3" onClick={() => window.location.reload()}>重新加载</button></div>
   }
 
   if (queue.length === 0) {
@@ -127,7 +132,7 @@ export default function Review() {
           <Link to="/stats" className="ml-btn">
             查看学习画像
           </Link>
-          <Link to="/" className="ml-btn ml-btn-primary">
+          <Link to="/workspace" className="ml-btn ml-btn-primary">
             回工作台
           </Link>
         </div>

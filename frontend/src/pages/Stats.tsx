@@ -21,9 +21,10 @@ export default function Stats() {
 
   return (
     <div>
+      <span className="page-kicker">YOUR LEARNING INSIGHTS</span>
       <h1 className="text-2xl font-semibold">学习画像</h1>
       <p className="mt-1 text-sm text-[var(--ml-text-muted)]">
-        错因聚合驱动下一轮出题——考、评、诊、治的完整闭环。
+        看见知识的积累，找到理解的薄弱处，安排下一步学习。
       </p>
 
       {/* 三个总览数 */}
@@ -81,7 +82,7 @@ export default function Stats() {
       <div className="ml-card mt-6 p-5">
         <div className="text-sm font-semibold">错因 Top5</div>
         {stats.error_top.length === 0 ? (
-          <div className="mt-3 text-sm text-[var(--ml-text-muted)]">暂错因记录——保持！</div>
+          <div className="mt-3 text-sm text-[var(--ml-text-muted)]">暂无错因记录，继续保持。</div>
         ) : (
           <div className="mt-3 space-y-2.5">
             {stats.error_top.map((e, i) => (

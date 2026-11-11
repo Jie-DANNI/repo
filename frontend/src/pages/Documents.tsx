@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import Icon from '../components/Icon'
 import api, { errorMessage } from '../lib/api'
 import type { ChunkItem, DocumentItem, KnowledgePointItem } from '../lib/types'
 import { DOC_STATUS, fmtSize } from '../lib/types'
@@ -38,6 +39,9 @@ export default function Documents() {
 
   const upload = useCallback(
     async (file: File) => {
+      if (uploading) return
+      if (!/\.(pdf|md|txt)$/i.test(file.name)) { setError('请上传 PDF、Markdown 或 TXT 文件'); return }
+      if (file.size > 50 * 1024 * 1024) { setError('文件大小不能超过 50MB'); return }
       setUploading(true)
       setError('')
       try {
@@ -51,7 +55,7 @@ export default function Documents() {
         setUploading(false)
       }
     },
-    [refresh],
+    [refresh, uploading],
   )
 
   const extract = useCallback(
@@ -110,16 +114,23 @@ export default function Documents() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold">知识库</h1>
+      <span className="page-kicker">MY KNOWLEDGE LIBRARY</span>
+      <h1 className="text-2xl font-semibold">我的知识库</h1>
       <p className="mt-1 text-sm text-[var(--ml-text-muted)]">
-        上传 PDF / MD / TXT 课件，自动解析切块、向量化建库，抽取知识点卡片。
+        让每一份资料都有条理，让每一个知识点都值得记住。
       </p>
 
       {/* 上传区 */}
       <div
         ref={dragRef}
-        className="ml-card mt-6 cursor-pointer border-dashed p-8 text-center transition"
+        className="ml-card document-upload mt-6 cursor-pointer border-dashed p-8 text-center transition"
+        role="button"
+        tabIndex={0}
+        aria-label="上传学习资料"
+        aria-disabled={uploading}
+        onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && !uploading) { e.preventDefault(); e.currentTarget.click() } }}
         onClick={() => {
+          if (uploading) return
           const input = document.createElement('input')
           input.type = 'file'
           input.accept = '.pdf,.md,.txt'
@@ -142,7 +153,7 @@ export default function Documents() {
           <div className="text-sm text-[var(--ml-warn)]">⏳ 上传并解析中…（大文件可能需要几十秒）</div>
         ) : (
           <>
-            <div className="text-3xl">📄</div>
+            <div className="upload-symbol"><Icon name="upload" size={25}/></div>
             <div className="mt-2 text-sm font-medium">点击选择文件，或把课件拖到这里</div>
             <div className="mt-1 text-xs text-[var(--ml-text-muted)]">支持 PDF / Markdown / TXT，≤ 50MB</div>
           </>
