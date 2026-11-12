@@ -1,0 +1,12 @@
+# 根构建上下文（frontend 多阶段构建用）：只保留 frontend/ 与 deploy/ 所需内容
+.git/
+frontend/node_modules/
+frontend/dist/
+backend/
+docs/
+prompts/
+output/
+*.zip
+.env
+.env.*
+!.env.prod.example

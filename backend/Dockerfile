@@ -6,7 +6,8 @@ WORKDIR /app
 # RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# 国内镜像加速（海外机器亦兼容）
+RUN pip install --no-cache-dir -i https://mirrors.aliyun.com/pypi/simple/ -r requirements.txt
 
 COPY . .
 

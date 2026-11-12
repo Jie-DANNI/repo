@@ -1,0 +1,70 @@
+# ============================================================
+# MemoLoop 生产编排（P10）
+#   - frontend：多阶段构建 → nginx 托管静态资源 + 反代（唯一对公网端口 80）
+#   - backend ：uvicorn 2 workers，仅内网可达（expose，不 publish）
+#   - postgres：pgvector:pg16，数据卷 pgdata_prod 持久化，不 publish
+# 用法：docker compose -f docker-compose.prod.yml up -d --build
+# ============================================================
+name: memoloop-prod
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: mloop-pg
+    environment:
+      POSTGRES_USER: memoloop
+      POSTGRES_PASSWORD: memoloop_prod_pwd
+      POSTGRES_DB: memoloop
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U memoloop -d memoloop"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: always
+
+  backend:
+    build: ./backend
+    container_name: mloop-api
+    env_file: .env.prod
+    environment:
+      # 覆盖 .env.prod 中的本地数据库地址，指向内网 postgres
+      DATABASE_URL: postgresql+asyncpg://memoloop:memoloop_prod_pwd@postgres:5432/memoloop
+    expose:
+      - "8000" # 仅容器网络内可见，公网走 nginx 反代
+    volumes:
+      - ./backend/storage:/app/storage # 上传文件落盘持久化（含预置课件 preset/）
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/api/health', timeout=5).status==200 else 1)",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: always
+
+  frontend:
+    build:
+      context: . # 根上下文：Dockerfile 同时需要 frontend/ 与 deploy/nginx.conf
+      dockerfile: frontend/Dockerfile
+    container_name: mloop-web
+    ports:
+      - "80:80" # 唯一公网入口；HTTPS 由宿主机 certbot/或改 443 后由此承载
+    depends_on:
+      backend:
+        condition: service_started
+    restart: always
+
+volumes:
+  pgdata_prod:

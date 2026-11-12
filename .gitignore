@@ -1,6 +1,7 @@
 # ===== 环境与密钥（绝不入库）=====
 .env
 .env.local
+.env.prod
 *.pem
 *.key
 
@@ -17,8 +18,9 @@ node_modules/
 dist/
 .vite/
 
-# ===== 上传与生成物 =====
-backend/storage/
+# ===== 上传与生成物（用户上传数据不入库，但预置评审课件必须入库）=====
+backend/storage/*
+!backend/storage/preset/
 *.log
 
 # ===== 系统 =====

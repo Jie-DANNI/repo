@@ -11,5 +11,5 @@ email-validator==2.2.0
 pymupdf==1.28.2
 numpy==2.5.4
 networkx==3.7
-fsrs==5.2.1
+fsrs==6.3.2
 httpx==0.28.1
